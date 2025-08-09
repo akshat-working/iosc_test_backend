@@ -328,7 +328,8 @@ If the context doesn't contain relevant information, politely inform the user an
 
 # Initialize the chatbot instance
 try:
-    chatbot = IoSCRAGChatbot()
+    data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "processed_data"))
+    chatbot = IoSCRAGChatbot(data_dir=data_dir)
     logger.info("Chatbot initialized successfully")
 except Exception as e:
     logger.error(f"Failed to initialize chatbot: {str(e)}")
