@@ -25,7 +25,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://iosc-website-test.vercel.app",
-        "https://www.iosc-edc.club/",# Remove trailing slash
+        "https://www.iosc-edc.club",
         "https://*.vercel.app",  # Allow all Vercel preview deployments
         "http://localhost:3000", 
         "http://127.0.0.1:3000"
