@@ -11,16 +11,12 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from data_processor import IoSCDataProcessor
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Load environment variables
 load_dotenv()
 
 app = FastAPI(title="IoSC RAG Chatbot API", version="1.0.0")
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -36,7 +32,6 @@ app.add_middleware(
 )
 
 
-# Pydantic models for API
 class ChatRequest(BaseModel):
     message: str
     session_id: Optional[str] = None
@@ -82,7 +77,6 @@ class IoSCRAGChatbot:
         self.model = None
         self.gemini_available = False
 
-        # System prompt for the AI model
         self.system_prompt = """You are an AI assistant specializing in the IoSC Tech Club. 
 Your role is to provide accurate, helpful, and friendly responses about IoSC based on the provided context.
 
@@ -110,7 +104,7 @@ Guidelines:
             'members': 'team members leadership',
         }
 
-        # Initialize components
+        
         self._initialize_components()
 
     def _initialize_components(self) -> None:
@@ -146,7 +140,7 @@ Guidelines:
             genai.configure(api_key=api_key)
             self.model = genai.GenerativeModel('gemini-1.5-flash')
 
-            # Test the model with a simple prompt
+            
             test_response = self.model.generate_content("Hello")
             if test_response and test_response.text:
                 self.gemini_available = True
@@ -171,7 +165,7 @@ Guidelines:
 
         query = query.lower().strip()
 
-        # Expand abbreviations and common terms
+        
         for abbr, full in self.query_expansions.items():
             import re
             pattern = rf'\b{re.escape(abbr)}\b'
@@ -188,7 +182,7 @@ Guidelines:
             processed_query = self.preprocess_query(query)
             results = self.data_processor.search_similar(processed_query, top_k=top_k)
 
-            # Filter by minimum similarity score
+            
             relevant_docs = [doc for doc in results if doc.get('similarity_score', 0) > min_similarity]
 
             logger.info(f"Retrieved {len(relevant_docs)} relevant documents for query: {query}")
@@ -287,13 +281,13 @@ If the context doesn't contain relevant information, politely inform the user an
             return "Please ask me something about IoSC!"
 
         try:
-            # Get relevant context documents
+            
             context_docs = self.get_relevant_context(user_input, top_k=5)
 
-            # Generate response using AI model or fallback
+            
             response = self.generate_response_with_gemini(user_input, context_docs, session_id)
 
-            # Store conversation in history
+            
             chat_history = self.get_session_history(session_id)
 
             chat_history.append(ChatMessage(
@@ -308,7 +302,7 @@ If the context doesn't contain relevant information, politely inform the user an
                 metadata={"gemini_used": self.gemini_available}
             ))
 
-            # Keep only recent messages to prevent memory issues
+            
             if len(chat_history) > 20:
                 self.chat_sessions[session_id] = chat_history[-20:]
 
@@ -327,7 +321,7 @@ If the context doesn't contain relevant information, politely inform the user an
         }
 
 
-# Initialize the chatbot instance
+
 try:
     data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "processed_data"))
     chatbot = IoSCRAGChatbot(data_dir=data_dir)
@@ -374,7 +368,7 @@ async def chat_endpoint(request: ChatRequest):
     if not chatbot:
         raise HTTPException(status_code=503, detail="Chatbot not available")
 
-    # Generate session ID if not provided
+    
     session_id = request.session_id or f"session_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
 
     try:
